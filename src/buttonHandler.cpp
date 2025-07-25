@@ -24,69 +24,6 @@ Button* getButtonAt(int row, int col) {
     return nullptr;
 }
 
-// Helper function for flood-fill to find connected tiles of same color
-void floodFillConnected(int row, int col, ButtonType targetType, ButtonType newType, bool visited[3][3]) {
-    // Check bounds
-    if (row < 0 || row > 2 || col < 0 || col > 2) return;
-    if (visited[row][col]) return;
-    
-    Button* btn = getButtonAt(row, col);
-    if (!btn || btn->type != targetType) return;
-    
-    // Mark as visited and change type
-    visited[row][col] = true;
-    btn->type = newType;
-    btn->colour = getButtonColor(newType);
-    
-    // Recursively check orthogonal neighbors
-    floodFillConnected(row - 1, col, targetType, newType, visited); // Up
-    floodFillConnected(row + 1, col, targetType, newType, visited); // Down
-    floodFillConnected(row, col - 1, targetType, newType, visited); // Left
-    floodFillConnected(row, col + 1, targetType, newType, visited); // Right
-}
-
-// Helper function to convert black tiles adjacent to newly blacked tiles to white
-void convertAdjacentBlackToWhite(bool blackedTiles[3][3]) {
-    // Create list of tiles to convert (to avoid modifying during iteration)
-    bool tilesToConvert[3][3] = {false};
-    
-    for (int row = 0; row < 3; row++) {
-        for (int col = 0; col < 3; col++) {
-            if (blackedTiles[row][col]) {
-                // Check orthogonal neighbors
-                int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-                for (int d = 0; d < 4; d++) {
-                    int newRow = row + directions[d][0];
-                    int newCol = col + directions[d][1];
-                    
-                    // Check bounds
-                    if (newRow >= 0 && newRow < 3 && newCol >= 0 && newCol < 3) {
-                        // Don't convert tiles that were just blacked in Phase 1
-                        if (!blackedTiles[newRow][newCol]) {
-                            Button* neighbor = getButtonAt(newRow, newCol);
-                            if (neighbor && neighbor->type == Black) {
-                                tilesToConvert[newRow][newCol] = true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    // Convert marked tiles to white
-    for (int row = 0; row < 3; row++) {
-        for (int col = 0; col < 3; col++) {
-            if (tilesToConvert[row][col]) {
-                Button* btn = getButtonAt(row, col);
-                if (btn) {
-                    btn->type = White;
-                    btn->colour = getButtonColor(White);
-                }
-            }
-        }
-    }
-}
 
 void ButtonHandler() {
     for (int i = 0; i < 9; i++) {
@@ -124,42 +61,123 @@ void setButtonTypes(ButtonType types[9]) {
 
 void handleButtonFunction(Button* btn) {
     switch (btn->type) {
-        case Brown: {
+        case Pink:
+            // Logic for pink button
+            Serial.println("Pink button action!");
+            break;
+        case Red:
+            // Red button: Brown tiles → Red, White tiles → Brown, others unchanged
+            for (int i = 0; i < 9; i++) {
+                if (gridButtons[i]->type == Brown) {
+                    gridButtons[i]->type = Red;
+                    gridButtons[i]->colour = getButtonColor(Red);
+                } else if (gridButtons[i]->type == White) {
+                    gridButtons[i]->type = Brown;
+                    gridButtons[i]->colour = getButtonColor(Brown);
+                }
+                // Other colors remain unchanged
+            }
+            Serial.println("Red button transformed grid: Brown→Red, White→Brown!");
+            break;
+        case Orange: {
             int row = btn->row;
+            int col = btn->col;
             
-            // Store the current types of all buttons in this row
-            ButtonType rowTypes[3];
-            for (int col = 0; col < 3; col++) {
-                for (int i = 0; i < 9; i++) {
-                    if (gridButtons[i]->row == row && gridButtons[i]->col == col) {
-                        rowTypes[col] = gridButtons[i]->type;
-                        break;
-                    }
+            // Count adjacent colors (orthogonal only)
+            int colorCount[10] = {0}; // Array to count each ButtonType (0-9)
+            
+            // Check orthogonal directions: north, south, east, west
+            int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+            for (int d = 0; d < 4; d++) {
+                int newRow = row + directions[d][0];
+                int newCol = col + directions[d][1];
+                
+                Button* neighbor = getButtonAt(newRow, newCol);
+                if (neighbor) {
+                    colorCount[static_cast<int>(neighbor->type)]++;
                 }
             }
             
-            // Cycle all colors in the row to the right (wrap around)
-            for (int col = 0; col < 3; col++) {
-                int nextCol = (col + 1) % 3; // Next column (wrapping)
-                for (int i = 0; i < 9; i++) {
-                    if (gridButtons[i]->row == row && gridButtons[i]->col == col) {
-                        gridButtons[i]->type = rowTypes[nextCol];
-                        gridButtons[i]->colour = getButtonColor(rowTypes[nextCol]);
-                        break;
-                    }
+            // Find plurality color (most frequent, but must be unique winner)
+            int maxCount = 0;
+            ButtonType pluralityColor = Orange;
+            bool hasTie = false;
+            
+            for (int i = 0; i < 10; i++) {
+                if (colorCount[i] > maxCount) {
+                    maxCount = colorCount[i];
+                    pluralityColor = static_cast<ButtonType>(i);
+                    hasTie = false;
+                } else if (colorCount[i] == maxCount && maxCount > 0) {
+                    hasTie = true;
                 }
             }
-            Serial.println("Brown button cycled row!");
+            
+            if (maxCount > 0 && !hasTie && pluralityColor != Orange) {
+                btn->type = pluralityColor;
+                btn->colour = getButtonColor(pluralityColor);
+                Serial.print("Orange button changed to plurality color: ");
+                Serial.println(static_cast<int>(pluralityColor));
+            } else {
+                Serial.println("Orange button - no clear plurality, no change");
+            }
             break;
         }
-        case Red:
-            // Logic for red button
-            Serial.println("Red button action!");
+        case Blue: {
+            // Blue button: Mimics the functionality of the center button (B2)
+            Button* centerButton = getButtonAt(1, 1); // Center tile (B2)
+            if (!centerButton || centerButton->type == Blue) {
+                Serial.println("Blue button - center is blue or invalid, no action");
+                break;
+            }
+            
+            // Temporarily change this blue button's type to match center
+            ButtonType originalType = btn->type;
+            CRGB originalColor = btn->colour;
+            btn->type = centerButton->type;
+            btn->colour = centerButton->colour;
+            
+            // Execute the center button's functionality from this position
+            handleButtonFunction(btn);
+            
+            // Restore original blue type and color
+            btn->type = originalType;
+            btn->colour = originalColor;
+            
+            Serial.print("Blue button mimicked ");
+            Serial.print(centerButton->type);
+            Serial.println(" behavior!");
             break;
-        case Blue:
-            // Logic for blue button
-            Serial.println("Blue button action!");
+        }
+        case Violet: {
+            int row = btn->row;
+            int col = btn->col;
+            
+            // If button is in bottom row (C row), do nothing
+            if (row == 2) {
+                Serial.println("Violet button in bottom row - no action");
+                break;
+            }
+            
+            // Find the button below (one row down)
+            int belowRow = row + 1;
+            Button* belowButton = getButtonAt(belowRow, col);
+            
+            if (belowButton) {
+                // Swap types and colors
+                ButtonType tempType = btn->type;
+                CRGB tempColor = btn->colour;
+                
+                btn->type = belowButton->type;
+                btn->colour = belowButton->colour;
+                
+                belowButton->type = tempType;
+                belowButton->colour = tempColor;
+                
+                Serial.println("Violet button swapped with button below!");
+            }
             break;
+        }
         case Yellow: {
             int row = btn->row;
             int col = btn->col;
@@ -220,7 +238,7 @@ void handleButtonFunction(Button* btn) {
                             neighbor->type = White;
                             neighbor->colour = getButtonColor(White);
                         }
-                        // Other colors (Brown, Red, Blue, Yellow, Green) remain unchanged
+                        // Other colors (Pink, Red, Orange, Blue, Violet, Yellow, Brown, Green) remain unchanged
                     }
                 }
             }
@@ -230,7 +248,36 @@ void handleButtonFunction(Button* btn) {
         }
         case Black:
             // Logic for black button (if any)
+            Serial.println("Black button action!");
             break;
+        case Brown: {
+            int row = btn->row;
+            
+            // Store the current types of all buttons in this row
+            ButtonType rowTypes[3];
+            for (int col = 0; col < 3; col++) {
+                for (int i = 0; i < 9; i++) {
+                    if (gridButtons[i]->row == row && gridButtons[i]->col == col) {
+                        rowTypes[col] = gridButtons[i]->type;
+                        break;
+                    }
+                }
+            }
+            
+            // Cycle all colors in the row to the right (wrap around)
+            for (int col = 0; col < 3; col++) {
+                int nextCol = (col + 1) % 3; // Next column (wrapping)
+                for (int i = 0; i < 9; i++) {
+                    if (gridButtons[i]->row == row && gridButtons[i]->col == col) {
+                        gridButtons[i]->type = rowTypes[nextCol];
+                        gridButtons[i]->colour = getButtonColor(rowTypes[nextCol]);
+                        break;
+                    }
+                }
+            }
+            Serial.println("Brown button cycled row!");
+            break;
+        }
         case Green: {
             int row = btn->row;
             int col = btn->col;

@@ -3,14 +3,16 @@
 #include <Arduino.h>
 
 enum ButtonType {
-    Brown,
+    Pink,
     Red,
+    Orange,
     Blue,
+    Violet,
     Yellow,
     White,
     Black,
-    Green,
-    Grey
+    Brown,
+    Green
 };
 
 struct Button {
@@ -24,14 +26,16 @@ struct Button {
 };
 
 constexpr CRGB BUTTON_COLORS[] = {
-    CRGB::Brown,  // Brown = 0
-    CRGB::Red,    // Red = 1  
-    CRGB::Blue,   // Blue = 2
-    CRGB::Yellow, // Yellow = 3
-    CRGB::White,  // White = 4
-    CRGB::Black,  // Black = 5
-    CRGB::Green,  // Green = 6
-    CRGB::Gray    // Grey = 7
+    CRGB::DeepPink,  // Pink = 0
+    CRGB::Red,       // Red = 1  
+    CRGB::Orange,    // Orange = 2
+    CRGB::Blue,      // Blue = 3
+    CRGB::Violet,    // Violet = 4
+    CRGB::Yellow,    // Yellow = 5
+    CRGB::White,     // White = 6
+    CRGB::Black,     // Black = 7
+    CRGB::Brown,     // Brown = 8
+    CRGB::Green      // Green = 9
 };
 
 inline CRGB getButtonColor(ButtonType type) {
