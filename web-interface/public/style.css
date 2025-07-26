@@ -1,0 +1,113 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.button-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    max-width: 200px;
+    margin: 0 auto;
+}
+
+.button-grid select {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.box-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.box-card.online {
+    border-left-color: #28a745;
+}
+
+.box-card.offline {
+    border-left-color: #dc3545;
+    opacity: 0.7;
+}
+
+.puzzle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+}
+
+.puzzle-cell {
+    border: 1px solid #333;
+    border-radius: 2px;
+}
+
+.corner-indicators {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5px;
+    width: 40px;
+    height: 40px;
+}
+
+.corner-indicator {
+    border: 2px solid #333;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+}
+
+.corner-indicator.active {
+    background-color: #28a745;
+}
+
+.status-badge {
+    font-size: 0.75rem;
+}
+
+.color-pink { background-color: #ff1493; }
+.color-red { background-color: #ff0000; }
+.color-orange { background-color: #ffa500; }
+.color-blue { background-color: #0000ff; }
+.color-violet { background-color: #8a2be2; }
+.color-yellow { background-color: #ffff00; }
+.color-white { background-color: #ffffff; border: 1px solid #ccc; }
+.color-black { background-color: #000000; }
+.color-brown { background-color: #8b4513; }
+.color-green { background-color: #008000; }
+
+.live-status {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.box-grid-display {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    width: 80px;
+    height: 80px;
+    margin: 10px auto;
+    border: 2px solid #333;
+    padding: 5px;
+    border-radius: 8px;
+}
+
+.box-grid-cell {
+    border: 1px solid #666;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+.box-grid-cell.pressed {
+    transform: scale(0.9);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}

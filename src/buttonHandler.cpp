@@ -124,25 +124,26 @@ void handleButtonFunction(Button* btn) {
             break;
         }
         case Blue: {
-            // Blue button: Mimics the functionality of the center button (B2)
+            // Blue button: Mimics the functionality of the center button (B2) from its own position
             Button* centerButton = getButtonAt(1, 1); // Center tile (B2)
             if (!centerButton || centerButton->type == Blue) {
                 Serial.println("Blue button - center is blue or invalid, no action");
                 break;
             }
             
-            // Temporarily change this blue button's type to match center
+            // Temporarily change this blue button to center type for behavior execution
             ButtonType originalType = btn->type;
-            CRGB originalColor = btn->colour;
             btn->type = centerButton->type;
-            btn->colour = centerButton->colour;
             
-            // Execute the center button's functionality from this position
+            // Execute the center button's behavior from this position
             handleButtonFunction(btn);
             
-            // Restore original blue type and color
-            btn->type = originalType;
-            btn->colour = originalColor;
+            // After behavior execution, find all buttons that are now Blue type and make them visually Blue
+            for (int i = 0; i < 9; i++) {
+                if (gridButtons[i]->type == Blue) {
+                    gridButtons[i]->colour = getButtonColor(Blue);
+                }
+            }
             
             Serial.print("Blue button mimicked ");
             Serial.print(centerButton->type);

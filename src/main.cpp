@@ -4,6 +4,7 @@
 #include "puzzleSetup.h"
 #include "buttonHandler.h"
 #include "puzzleLogic.h"
+#include "webServer.h"
 #include <Arduino.h>
 #include <FastLED.h>
 
@@ -64,12 +65,21 @@ void buttonSetup() {
   pinMode(GC1.pin, INPUT_PULLUP);
   pinMode(GC2.pin, INPUT_PULLUP);
   pinMode(GC3.pin, INPUT_PULLUP);
+  
+  // Setup corner buttons
+  for (int i = 0; i < 4; i++) {
+    pinMode(cornerButtonPins[i], INPUT_PULLUP);
+  }
 }
 
 void setup() {
   Serial.begin(115200);
   LEDSetup();
   buttonSetup();
+  
+  // Initialize WiFi - Replace with your credentials
+  initWiFi("gusmanor", "Bigboygus");
+  initWebServer();
 }
 
 void loop() {
@@ -82,7 +92,24 @@ void loop() {
 
   if (currentState == PLAYING) {
     ButtonHandler();
-    //updateLEDs();
+    
+    // Update corner LEDs based on current grid state
+    updateCornerLEDs();
+    
+    // Check corner buttons for win condition
+    for (int i = 0; i < 4; i++) {
+      bool currentButtonState = digitalRead(cornerButtonPins[i]) == LOW;
+      bool lastState = lastButtonState[9 + i]; // Corner buttons use indices 9-12
+      
+      if (currentButtonState && !lastState) { // Button just pressed
+        handleCornerButtonPress(i);
+      }
+      
+      lastButtonState[9 + i] = currentButtonState;
+    }
+    
+    // Broadcast status updates
+    broadcastStatus();
   }
 
   if (currentState == SOLVED) {

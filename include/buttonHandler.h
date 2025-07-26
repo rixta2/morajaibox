@@ -47,3 +47,4 @@ extern Button* gridButtons[9];
 void ButtonHandler();
 void setButtonTypes(ButtonType types[9]);
 void handleButtonFunction(Button* btn);
+void executeButtonBehavior(ButtonType behaviorType, Button* fromPosition);
