@@ -102,8 +102,9 @@ async function loadPuzzles() {
 function renderBoxList() {
     const boxList = document.getElementById('boxList');
     const boxes = Array.from(connectedBoxes.values());
+    const onlineBoxes = boxes.filter(box => box.status === 'online');
     
-    document.getElementById('boxCount').textContent = `${boxes.length} Boxes`;
+    document.getElementById('boxCount').textContent = `${onlineBoxes.length} Boxes`;
     
     boxList.innerHTML = boxes.map(box => `
         <div class="list-group-item box-card ${box.status || 'offline'}" data-box-id="${box.id}">

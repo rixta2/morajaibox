@@ -11,3 +11,6 @@ extern CRGB corner[NUM_SINGLE][LEDS_PER_STRIP_SINGLE];
 extern int cornerButtonPins[4];
 extern bool initiate;
 extern bool lastButtonState[13];
+
+// Server configuration
+extern const char* SERVER_IP;

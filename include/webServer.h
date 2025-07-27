@@ -4,6 +4,7 @@
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 #include <HTTPClient.h>
+#include "config.h"
 
 extern AsyncWebServer server;
 extern String boxId;

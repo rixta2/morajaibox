@@ -146,7 +146,10 @@ void registerWithServer() {
     delay(2000);
     
     HTTPClient http;
-    http.begin("http://192.168.1.68:3000/api/boxes/register");
+    String serverUrl = "http://";
+    serverUrl += SERVER_IP;
+    serverUrl += ":3000/api/boxes/register";
+    http.begin(serverUrl);
     http.addHeader("Content-Type", "application/json");
     http.setTimeout(10000); // 10 second timeout
     
