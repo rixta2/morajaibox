@@ -3,6 +3,7 @@
 #include "buttonHandler.h"
 #include "puzzleSetup.h"
 #include "puzzleLogic.h"
+#include <ArduinoOTA.h>
 
 AsyncWebServer server(80);
 String boxId;
@@ -21,7 +22,7 @@ void initWiFi(const char* ssid, const char* password) {
         Serial.print(".");
     }
     
-    boxId = "box_" + WiFi.macAddress();
+    boxId = BOX_NAME;
     
     Serial.println();
     Serial.print("Connected! IP: ");
@@ -70,6 +71,9 @@ void initWebServer() {
     
     server.begin();
     Serial.println("Web server started on port 80");
+    
+    // Initialize OTA
+    initOTA();
     
     // Register with management server
     registerWithServer();
@@ -180,4 +184,38 @@ void broadcastStatus() {
         lastBroadcast = millis();
         Serial.println("STATUS: " + getCurrentStatus());
     }
+}
+
+void initOTA() {
+    ArduinoOTA.setHostname(BOX_NAME);
+    ArduinoOTA.setPassword(OTA_PASSWORD);
+    
+    ArduinoOTA.onStart([]() {
+        String type = (ArduinoOTA.getCommand() == U_FLASH) ? "sketch" : "filesystem";
+        Serial.println("Start updating " + type);
+    });
+    
+    ArduinoOTA.onEnd([]() {
+        Serial.println("\nEnd");
+    });
+    
+    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+    });
+    
+    ArduinoOTA.onError([](ota_error_t error) {
+        Serial.printf("Error[%u]: ", error);
+        if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+        else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+        else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+        else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+        else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    });
+    
+    ArduinoOTA.begin();
+    Serial.println("OTA Ready");
+}
+
+void handleOTA() {
+    ArduinoOTA.handle();
 }

@@ -91,6 +91,9 @@ void loop() {
   }
 
   if (currentState == PLAYING) {
+    // Handle OTA updates
+    handleOTA();
+    
     ButtonHandler();
     
     // Update corner LEDs based on current grid state

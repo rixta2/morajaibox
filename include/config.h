@@ -14,3 +14,5 @@ extern bool lastButtonState[13];
 
 // Server configuration
 extern const char* SERVER_IP;
+extern const char* BOX_NAME;
+extern const char* OTA_PASSWORD;

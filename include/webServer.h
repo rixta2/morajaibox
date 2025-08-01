@@ -11,6 +11,8 @@ extern String boxId;
 
 void initWiFi(const char* ssid, const char* password);
 void initWebServer();
+void initOTA();
+void handleOTA();
 void registerWithServer();
 void broadcastStatus();
 String getCurrentStatus();
